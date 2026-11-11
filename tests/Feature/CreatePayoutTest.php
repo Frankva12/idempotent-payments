@@ -2,6 +2,11 @@
 
 use App\Enums\PayoutStatus;
 use App\Models\Payout;
+use Illuminate\Support\Str;
+
+beforeEach(function () {
+    $this->withHeader('Idempotency-Key', (string) Str::uuid());
+});
 
 it('creates a pending payout with the amount in cents', function () {
     $response = $this->postJson('/api/payouts', [
