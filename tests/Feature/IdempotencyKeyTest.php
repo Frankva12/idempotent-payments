@@ -27,8 +27,8 @@ it('creates a single payout when the same request is sent twice', function () {
     $second = $this->withHeader('Idempotency-Key', 'key-1')
         ->postJson('/api/payouts', payoutPayload());
 
-    $first->assertCreated();
-    $second->assertCreated()
+    $first->assertAccepted();
+    $second->assertAccepted()
         ->assertHeader('Idempotent-Replayed', 'true')
         ->assertJsonPath('data.id', $first->json('data.id'));
 
@@ -38,11 +38,11 @@ it('creates a single payout when the same request is sent twice', function () {
 it('treats the same payload with keys in a different order as the same request', function () {
     $this->withHeader('Idempotency-Key', 'key-1')
         ->postJson('/api/payouts', ['wallet_id' => 'wal_1', 'amount' => 100, 'currency' => 'USD'])
-        ->assertCreated();
+        ->assertAccepted();
 
     $this->withHeader('Idempotency-Key', 'key-1')
         ->postJson('/api/payouts', ['currency' => 'USD', 'amount' => 100, 'wallet_id' => 'wal_1'])
-        ->assertCreated()
+        ->assertAccepted()
         ->assertHeader('Idempotent-Replayed', 'true');
 
     expect(Payout::count())->toBe(1);
@@ -51,7 +51,7 @@ it('treats the same payload with keys in a different order as the same request',
 it('rejects a reused key with a different payload', function () {
     $this->withHeader('Idempotency-Key', 'key-1')
         ->postJson('/api/payouts', payoutPayload(['amount' => 2500]))
-        ->assertCreated();
+        ->assertAccepted();
 
     $this->withHeader('Idempotency-Key', 'key-1')
         ->postJson('/api/payouts', payoutPayload(['amount' => 9900]))
@@ -61,8 +61,8 @@ it('rejects a reused key with a different payload', function () {
 });
 
 it('creates separate payouts for different keys', function () {
-    $this->withHeader('Idempotency-Key', 'key-1')->postJson('/api/payouts', payoutPayload())->assertCreated();
-    $this->withHeader('Idempotency-Key', 'key-2')->postJson('/api/payouts', payoutPayload())->assertCreated();
+    $this->withHeader('Idempotency-Key', 'key-1')->postJson('/api/payouts', payoutPayload())->assertAccepted();
+    $this->withHeader('Idempotency-Key', 'key-2')->postJson('/api/payouts', payoutPayload())->assertAccepted();
 
     expect(Payout::count())->toBe(2);
 });

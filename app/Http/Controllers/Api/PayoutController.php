@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\PayoutStatus;
 use App\Http\Controllers\Controller;
+use App\Jobs\ProcessPayout;
 use App\Http\Requests\StorePayoutRequest;
 use App\Http\Resources\PayoutResource;
 use App\Models\Payout;
@@ -18,7 +19,10 @@ class PayoutController extends Controller
             'status' => PayoutStatus::Pending,
         ]);
 
-        return PayoutResource::make($payout)->response()->setStatusCode(201);
+        ProcessPayout::dispatch($payout->id);
+
+        // 202: the payout is accepted, and the client polls or listens for the final status.
+        return PayoutResource::make($payout)->response()->setStatusCode(202);
     }
 
     public function show(Payout $payout): PayoutResource

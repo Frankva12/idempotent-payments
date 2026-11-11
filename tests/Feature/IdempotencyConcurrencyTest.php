@@ -9,7 +9,7 @@ it('answers 409 while another request holds the same key', function () {
     $payload = ['wallet_id' => 'wal_1', 'amount' => 1000, 'currency' => 'USD'];
 
     // Hold the key the way an in-flight request would, then fire the duplicate.
-    $this->withHeader('Idempotency-Key', 'key-1')->postJson('/api/payouts', $payload)->assertCreated();
+    $this->withHeader('Idempotency-Key', 'key-1')->postJson('/api/payouts', $payload)->assertAccepted();
     IdempotencyKey::where('key', 'key-1')->update(['response_status' => null, 'response_body' => null]);
 
     $this->withHeader('Idempotency-Key', 'key-1')
@@ -37,7 +37,7 @@ it('claims a key with a single atomic insert', function () {
 
     $this->withHeader('Idempotency-Key', 'key-1')
         ->postJson('/api/payouts', ['wallet_id' => 'wal_1', 'amount' => 1000, 'currency' => 'USD'])
-        ->assertCreated();
+        ->assertAccepted();
 
     expect($queries[0])->toStartWith('insert')->toContain('on conflict do nothing');
 });

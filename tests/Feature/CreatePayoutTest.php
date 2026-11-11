@@ -1,21 +1,24 @@
 <?php
 
 use App\Enums\PayoutStatus;
+use App\Jobs\ProcessPayout;
 use App\Models\Payout;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
 beforeEach(function () {
+    Queue::fake();
     $this->withHeader('Idempotency-Key', (string) Str::uuid());
 });
 
-it('creates a pending payout with the amount in cents', function () {
+it('accepts a pending payout and queues it for processing', function () {
     $response = $this->postJson('/api/payouts', [
         'wallet_id' => 'wal_123',
         'amount' => 1050,
         'currency' => 'USD',
     ]);
 
-    $response->assertCreated()
+    $response->assertAccepted()
         ->assertJsonPath('data.amount', 1050)
         ->assertJsonPath('data.status', PayoutStatus::Pending->value);
 
@@ -23,6 +26,8 @@ it('creates a pending payout with the amount in cents', function () {
         ->wallet_id->toBe('wal_123')
         ->amount->toBe(1050)
         ->status->toBe(PayoutStatus::Pending);
+
+    Queue::assertPushed(ProcessPayout::class, fn (ProcessPayout $job) => $job->payoutId === Payout::sole()->id);
 });
 
 it('rejects invalid amounts', function (mixed $amount) {
