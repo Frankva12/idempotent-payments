@@ -1,5 +1,7 @@
 # Idempotent Payments
 
+[![CI](https://github.com/Frankva12/idempotent-payments/actions/workflows/ci.yml/badge.svg)](https://github.com/Frankva12/idempotent-payments/actions/workflows/ci.yml)
+
 **A payout API that never pays twice, even when clients retry, workers crash, and the provider times out.**
 
 Moving money looks simple: receive a request, call the payment provider, save the result. In production every step of that can repeat or vanish. A client retries after a network blip, a queue redelivers a job, the provider answers with a timeout after the money already moved, and webhooks arrive twice or out of order. Each of those is a chance to pay someone twice.
