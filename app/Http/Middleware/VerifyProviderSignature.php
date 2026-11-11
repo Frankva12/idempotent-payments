@@ -26,7 +26,7 @@ class VerifyProviderSignature
         }
 
         // Signing the timestamp with the body stops an old captured request from being replayed.
-        if (abs(now()->timestamp - (int) $timestamp) > self::TOLERANCE_SECONDS) {
+        if (abs(now()->getTimestamp() - (int) $timestamp) > self::TOLERANCE_SECONDS) {
             return $this->reject();
         }
 

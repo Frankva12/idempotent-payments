@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\PayoutStatus;
 use App\Http\Controllers\Controller;
-use App\Jobs\ProcessPayout;
 use App\Http\Requests\StorePayoutRequest;
 use App\Http\Resources\PayoutResource;
+use App\Jobs\ProcessPayout;
 use App\Models\Payout;
 use Illuminate\Http\JsonResponse;
 

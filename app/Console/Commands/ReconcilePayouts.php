@@ -10,7 +10,6 @@ use App\Payouts\PayoutProvider;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 
 #[Signature('payouts:reconcile {--stale-after=120 : Seconds a payout must sit untouched before it is checked}')]
@@ -26,11 +25,15 @@ class ReconcilePayouts extends Command
         Payout::query()
             ->whereIn('status', [PayoutStatus::PendingVerification, PayoutStatus::InProgress])
             ->where('updated_at', '<', $cutoff)
-            ->whereHas('attempts')
             ->with(['attempts' => fn ($query) => $query->latest()])
             ->lazyById()
             ->each(function (Payout $payout) use ($provider, $processor, &$tally): void {
                 $attempt = $payout->attempts->first();
+
+                if ($attempt === null) {
+                    return;
+                }
+
                 $result = $provider->lookup($attempt->id);
 
                 try {
