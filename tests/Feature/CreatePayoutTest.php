@@ -61,3 +61,7 @@ it('shows a payout', function () {
         ->assertOk()
         ->assertJsonPath('data.id', $payout->id);
 });
+
+it('answers 404 for an id that is not a uuid', function () {
+    $this->getJson('/api/payouts/not-a-uuid')->assertNotFound();
+});
