@@ -23,16 +23,21 @@ class EnsureIdempotency
         }
 
         $fingerprint = $this->fingerprint($request);
-        $existing = IdempotencyKey::where('key', $key)->first();
 
-        if ($existing !== null) {
-            return $this->answerForExisting($existing, $fingerprint);
-        }
-
-        $record = IdempotencyKey::create([
+        // Check-then-insert would let two concurrent requests both see "no key" and both run.
+        // Inserting first lets the unique index pick exactly one winner.
+        $claimed = IdempotencyKey::query()->insertOrIgnore([
             'key' => $key,
             'request_hash' => $fingerprint,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
+
+        $record = IdempotencyKey::where('key', $key)->firstOrFail();
+
+        if ($claimed === 0) {
+            return $this->answerForExisting($record, $fingerprint);
+        }
 
         return $this->runAndRemember($record, $request, $next);
     }
