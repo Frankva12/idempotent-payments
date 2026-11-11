@@ -2,6 +2,14 @@
 
 return [
 
+    'payout_provider' => [
+        'driver' => env('PAYOUT_PROVIDER_DRIVER', 'simulated'),
+        'url' => env('PAYOUT_PROVIDER_URL', 'https://provider.test'),
+        'key' => env('PAYOUT_PROVIDER_KEY', ''),
+        'timeout' => (int) env('PAYOUT_PROVIDER_TIMEOUT', 10),
+        'webhook_secret' => env('PAYOUT_PROVIDER_WEBHOOK_SECRET', ''),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
